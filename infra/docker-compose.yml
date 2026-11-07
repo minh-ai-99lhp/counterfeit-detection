@@ -1,0 +1,72 @@
+# Hạ tầng crawl chạy LOCAL cho POC.
+#   Kafka  = hàng đợi URL (topic lazada.crawl.urls)
+#   Redis  = lớp kiểm soát: dedup (seen), in-flight, counters, control
+#   kafka-ui = xem topic/offset cho dễ demo (tùy chọn)
+#
+# Chạy:   cd infra && docker compose up -d
+# Tắt:    docker compose down          (thêm -v để xóa cả dữ liệu)
+# Cần bật Docker Desktop + WSL integration cho distro này trước.
+
+name: poc-counterfeit
+
+services:
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: poc_kafka
+    ports:
+      - "9092:9092"     # worker chạy trên host kết nối localhost:9092
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      # HOST = worker chạy trên host (localhost:9092); DOCKER = container nội bộ (kafka:29092)
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,HOST:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_LISTENERS: HOST://0.0.0.0:9092,DOCKER://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:29092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 3
+      CLUSTER_ID: poc-counterfeit-cluster
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: poc_redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: poc_kafka_ui
+    ports:
+      - "8080:8080"     # http://localhost:8080 để xem topic/offset
+    environment:
+      KAFKA_CLUSTERS_0_NAME: poc
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+volumes:
+  kafka_data:
+  redis_data:

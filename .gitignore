@@ -1,0 +1,55 @@
+# ===== Node / Web =====
+node_modules/
+dist/
+build/
+.next/
+*.tsbuildinfo
+
+# ===== Python =====
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ===== Environment variables =====
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===== Supabase (local dev) =====
+supabase/.branches/
+supabase/.temp/
+
+# ===== Logs & data cục bộ =====
+*.log
+logs/
+*.sqlite
+*.db
+
+# ===== Headless-browser profile (session/cookie đăng nhập — KHÔNG commit) =====
+worker/.pw-profile-*/
+
+# ===== Agent scratchpad =====
+.agent/temp/
+
+# ===== Spike/test dirs: giữ script + report, bỏ output chạy ra =====
+# (venv của paddleocr-test nằm NGOÀI repo — xem paddleocr-test/README.md)
+paddleocr-test/out/
+paddleocr-test/*.json
+gliner2-test/*.json
+
+# ===== OS / Editor =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

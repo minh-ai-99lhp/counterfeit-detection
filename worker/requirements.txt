@@ -1,0 +1,21 @@
+kafka-python-ng==2.2.3  # fork hỗ trợ Python 3.12 (kafka-python 2.0.2 gãy vendored six)
+redis==5.0.8
+psycopg[binary]==3.2.3
+requests==2.32.3
+python-dotenv==1.0.1
+
+# Headless browser cho nguồn client-side render / anti-bot (Shopee; backup Lazada).
+# Sau khi cài: `python -m playwright install chromium`
+# (WSL thiếu lib hệ thống thì chạy thêm `python -m playwright install-deps` bằng sudo).
+playwright==1.47.0
+
+# OCR (module ocr_*). Engine CHÍNH = easyocr: PaddleOCR lang="vi" thực chất
+# chỉ là model latin_dict, không có ký tự dấu tiếng Việt → luôn ra text mất dấu
+# ("Dung luo'ng", "Tiéng on thap"). easyocr có model VI đủ dấu.
+easyocr==1.7.2
+# paddle giữ làm engine phụ (OCR_BACKEND=paddle), nhanh hơn nhưng KHÔNG dùng
+# được cho tiếng Việt có dấu. Wheel cũng kén trên Py3.12/WSL.
+paddlepaddle==2.6.2
+paddleocr==2.9.1
+Pillow==10.4.0
+numpy==1.26.4
